@@ -6,13 +6,15 @@ use App\Http\Controllers\DoctorController;
 use App\Http\Controllers\MedicalRecordController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\ReportController;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'message' => 'Inertia 2 + React 19 + Vite + Tailwind 4 is configured.',
-    ]);
+    if (Auth::check()) {
+        return redirect()->route('dashboard');
+    }
+    return redirect()->route('login');
 })->name('welcome');
 
 /*
@@ -28,13 +30,19 @@ Route::middleware(['auth', 'clinic'])->group(function () {
     Route::get('/dashboard/patient', [DashboardController::class, 'index'])->name('dashboard.patient');
 
     // Patients (KLK-019): admin may create/update/delete, dokter is read-only.
+    // NOTE: static `/patients/create` MUST be declared BEFORE the dynamic
+    // `/patients/{patient}` route, otherwise `create` is bound to the {patient}
+    // parameter and triggers a bigint cast error (SQLSTATE 22P02).
+    Route::middleware('role:admin')->group(function () {
+        Route::get('/patients/create', [PatientController::class, 'create'])->name('patients.create');
+    });
+
     Route::middleware('role:admin,dokter')->group(function () {
         Route::get('/patients', [PatientController::class, 'index'])->name('patients.index');
         Route::get('/patients/{patient}', [PatientController::class, 'show'])->name('patients.show');
     });
 
     Route::middleware('role:admin')->group(function () {
-        Route::get('/patients/create', [PatientController::class, 'create'])->name('patients.create');
         Route::post('/patients', [PatientController::class, 'store'])->name('patients.store');
         Route::get('/patients/{patient}/edit', [PatientController::class, 'edit'])->name('patients.edit');
         Route::put('/patients/{patient}', [PatientController::class, 'update'])->name('patients.update');

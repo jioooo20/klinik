@@ -40,7 +40,7 @@ export default function RoleLayout({ title, accent, nav, children }: RoleLayoutP
                         const active = current === item.href;
                         return (
                             <Link
-                                key={item.href}
+                                key={item.label}
                                 href={item.href}
                                 className={cn(
                                     'flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors',

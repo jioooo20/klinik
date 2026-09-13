@@ -33,7 +33,12 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // AUTH-08: login throttled to 5 attempts/minute per email + IP (KLK-024).
+        // E2E bypass: disable rate limiting when APP_ENV=e2e to avoid 429 during test runs.
         RateLimiter::for('login', function (Request $request): Limit {
+            if (app()->environment('e2e')) {
+                return Limit::none();
+            }
+
             return Limit::perMinute(5)
                 ->by(mb_strtolower((string) $request->input('email')).'|'.$request->ip());
         });

@@ -6,7 +6,6 @@ const nav: NavItem[] = [
     { label: 'Dasbor', href: '/dashboard/doctor' },
     { label: 'Antrean Hari Ini', href: '/appointments' },
     { label: 'Pasien Saya', href: '/patients' },
-    { label: 'Rekam Medis', href: '/patients' },
 ];
 
 export default function DoctorLayout({ children }: { children: ReactNode }) {

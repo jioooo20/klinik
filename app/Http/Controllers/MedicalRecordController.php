@@ -143,7 +143,7 @@ class MedicalRecordController extends Controller
                 'plan' => $record->plan,
                 'icd10_codes' => $this->splitCodes($record->icd10_code),
                 'vitals' => $record->vitals,
-                'prescription' => $record->prescription ?? [],
+                'prescription' => $this->normalizePrescription($record->prescription),
                 'doctor' => $record->doctor?->user?->name,
             ],
             'patient' => [
@@ -172,8 +172,8 @@ class MedicalRecordController extends Controller
                 'assessment' => $record->assessment,
                 'plan' => $record->plan,
                 'icd10_codes' => $this->splitCodes($record->icd10_code),
-                'vitals' => $record->vitals ?? ['tensi' => '', 'suhu' => '', 'nadi' => '', 'respirasi' => ''],
-                'prescription' => implode("\n", $record->prescription ?? []),
+                'vitals' => $this->normalizeVitals($record->vitals),
+                'prescription' => implode("\n", $this->normalizePrescription($record->prescription)),
             ],
             'patient' => [
                 'id' => $record->patient?->id,
@@ -216,6 +216,59 @@ class MedicalRecordController extends Controller
         $this->authorize('delete', $record);
 
         abort(403, 'Rekam medis bersifat immutable dan tidak dapat dihapus.');
+    }
+
+    /**
+     * Normalise prescription entries to plain drug-name strings.
+     *
+     * Seeded records store structured objects ({name, dose, frequency});
+     * user-entered records store plain strings. Both shapes are flattened
+     * to a list of names so the UI can render and edit them uniformly.
+     *
+     * @return array<int, string>
+     */
+    private function normalizePrescription(mixed $prescription): array
+    {
+        if (! is_array($prescription)) {
+            return [];
+        }
+
+        $out = [];
+
+        foreach ($prescription as $item) {
+            if (is_string($item) && trim($item) !== '') {
+                $out[] = $item;
+            } elseif (is_array($item) && isset($item['name'])) {
+                $out[] = (string) $item['name'];
+            }
+        }
+
+        return $out;
+    }
+
+    /**
+     * Coerce vitals to string values for HTML form inputs, filling any
+     * missing key with an empty string. The seeder stores numeric values
+     * for suhu/nadi while UpdateMedicalRecordRequest validates them as
+     * strings, so normalisation here prevents silent 422 failures.
+     *
+     * @return array{tensi: string, suhu: string, nadi: string, respirasi: string}
+     */
+    private function normalizeVitals(mixed $vitals): array
+    {
+        $defaults = ['tensi' => '', 'suhu' => '', 'nadi' => '', 'respirasi' => ''];
+
+        if (! is_array($vitals)) {
+            return $defaults;
+        }
+
+        foreach ($defaults as $key => $default) {
+            if (isset($vitals[$key])) {
+                $defaults[$key] = (string) $vitals[$key];
+            }
+        }
+
+        return $defaults;
     }
 
     /**

@@ -111,8 +111,13 @@ export default function Show({ patient, appointments, medicalRecords }: ShowProp
                 </Card>
 
                 <Card className="lg:col-span-2">
-                    <CardHeader>
+                    <CardHeader className="flex flex-row items-center justify-between">
                         <CardTitle>Riwayat Kunjungan</CardTitle>
+                        <Button asChild size="sm" variant="outline">
+                            <Link href={route('patients.records.index', patient.id)}>
+                                Lihat Semua Rekam Medis
+                            </Link>
+                        </Button>
                     </CardHeader>
                     <CardContent className="p-0">
                         <div className="overflow-x-auto">
