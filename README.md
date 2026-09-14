@@ -9,6 +9,14 @@ PostgreSQL 16+ · spatie/laravel-permission · spatie/laravel-activitylog · Vit
 
 ---
 
+## Panduan Pengguna
+
+Panduan lengkap proses bisnis dan penggunaan aplikasi berdasarkan peran tersedia di:
+
+- [Panduan Dasar Pengguna](Panduan-Dasar-Pengguna.md) — mencakup alur Admin Klinik, Dokter, dan Pasien, hak akses, autentikasi, janji temu, rekam medis, laporan, state machine, serta seluruh percabangan proses bisnis.
+
+---
+
 ## 1. Prasyarat
 
 | Perangkat | Versi minimum | Cek |
@@ -90,6 +98,9 @@ wajib diganti sebelum produksi.**
 
 Seeder membuat: 1 klinik, 1 admin, 2 dokter, 1 user pasien, 10 pasien,
 10 appointment, 10 rekam medis, 3 role, 12 permission, dan 46 kode ICD-10.
+
+> Alur kerja tiap peran setelah login dijelaskan lengkap di
+> [Panduan Dasar Pengguna](Panduan-Dasar-Pengguna.md).
 
 ---
 
