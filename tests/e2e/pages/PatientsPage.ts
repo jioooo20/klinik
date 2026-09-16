@@ -50,6 +50,30 @@ export class PatientsIndexPage {
 
         throw new Error(`Could not determine patient id from page`);
     }
+
+    /**
+     * Resolves a patient id by NAME via the server-side search endpoint.
+     *
+     * Uses the same "Detail" link mechanism as firstPatientId() rather than
+     * hard-coding a row id: search narrows the table to one row, then the
+     * link's parsed pathname supplies the id. Ziggy emits absolute hrefs, so
+     * we match on `/patients/{digits}` anywhere in the string.
+     */
+    async idForName(name: string): Promise<number> {
+        await this.searchFor(name);
+
+        const row = this.row(name);
+        await expect(row).toBeVisible();
+
+        const detailLink = row.getByRole('link', { name: 'Detail' }).first();
+        const href = await detailLink.getAttribute('href');
+        const match = href?.match(/\/patients\/(\d+)/);
+        if (!match) {
+            throw new Error(`Could not determine patient id for "${name}" from href ${href}`);
+        }
+
+        return Number(match[1]);
+    }
 }
 
 export class PatientCreatePage {
@@ -67,6 +91,12 @@ export class PatientCreatePage {
         gender: 'male' | 'female';
         phone?: string;
         address?: string;
+        // Clinical fields (KLK-021 extension). All optional so the original
+        // patient-management spec keeps compiling and passing unchanged.
+        bloodType?: 'A' | 'B' | 'AB' | 'O';
+        allergies?: string;
+        emergencyContactName?: string;
+        emergencyContactPhone?: string;
     }): Promise<void> {
         await this.page.locator('#nik').fill(input.nik);
         await this.page.locator('#name').fill(input.name);
@@ -77,6 +107,18 @@ export class PatientCreatePage {
         }
         if (input.address) {
             await this.page.locator('#address').fill(input.address);
+        }
+        if (input.bloodType) {
+            await this.page.locator('#blood_type').selectOption(input.bloodType);
+        }
+        if (input.allergies) {
+            await this.page.locator('#allergies').fill(input.allergies);
+        }
+        if (input.emergencyContactName) {
+            await this.page.locator('#emergency_contact_name').fill(input.emergencyContactName);
+        }
+        if (input.emergencyContactPhone) {
+            await this.page.locator('#emergency_contact_phone').fill(input.emergencyContactPhone);
         }
     }
 
@@ -99,5 +141,35 @@ export class PatientShowPage {
         await expect(
             this.page.getByRole('main').getByText(/^Janji Temu$/),
         ).toBeVisible();
+    }
+}
+
+/**
+ * Page object for the admin Edit Pasien screen (resources/js/Pages/Patients/Edit.tsx).
+ *
+ * Reuses the same `#field` ids as PatientCreatePage so a create→edit round-trip
+ * asserts on identical selectors.
+ */
+export class PatientEditPage {
+    constructor(private readonly page: Page) {}
+
+    async open(id: number): Promise<void> {
+        await this.page.goto(`/patients/${id}/edit`);
+        await expect(this.page.getByText('Edit Data Pasien')).toBeVisible();
+    }
+
+    /** The allowed blood-type values, mirrored from StorePatientRequest's `in:A,B,AB,O`. */
+    async bloodTypeOptionValues(): Promise<string[]> {
+        return this.page
+            .locator('#blood_type option')
+            .evaluateAll((options) => options.map((o) => (o as HTMLOptionElement).value));
+    }
+
+    async setBloodType(value: 'A' | 'B' | 'AB' | 'O'): Promise<void> {
+        await this.page.locator('#blood_type').selectOption(value);
+    }
+
+    async submit(): Promise<void> {
+        await this.page.getByRole('button', { name: 'Simpan Perubahan' }).click();
     }
 }

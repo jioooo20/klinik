@@ -43,4 +43,12 @@ export default function globalSetup(): void {
         stdio: 'inherit',
         env: { ...process.env, APP_ENV: 'e2e' },
     });
+
+    // ONE patient with a NULL NIK, so the "Belum ada NIK" fallback on
+    // /patients/{id} is reachable end-to-end (the demo seeder always sets a NIK).
+    execFileSync('php', [path.join(root, 'tests', 'e2e', 'support', 'seed-null-nik-patient.php')], {
+        cwd: root,
+        stdio: 'inherit',
+        env: { ...process.env, APP_ENV: 'e2e' },
+    });
 }

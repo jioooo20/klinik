@@ -70,4 +70,25 @@ test.describe('Regression: Dokter queue "Isi Rekam Medis" patient-id binding', (
             page.getByRole('main').getByText(patientName, { exact: false }).first(),
         ).toBeVisible();
     });
+
+    test('dokter with an empty today queue sees the "Belum ada antrean." empty state', async ({ page }) => {
+        // Clinic B's only appointment is scheduled for now()->addDays(2)
+        // (seed-tenant.php:64), so its doctor has ZERO today rows — reachable
+        // with the EXISTING fixtures, no extra seed. dokter1 (the queue-fixture
+        // owner asserted above) is untouched, so this cannot destabilise the
+        // "Isi Rekam Medis" test.
+        await login(page, 'dokterB');
+        await page.goto('/dashboard/doctor');
+
+        // "Antrean Hari Ini" is also a sidebar link — scope to <main>.
+        await expect(
+            page.getByRole('main').getByText('Antrean Hari Ini'),
+        ).toBeVisible();
+
+        // The empty-state copy from Dashboard/Doctor.tsx:83-88.
+        await expect(page.getByText('Belum ada antrean.')).toBeVisible();
+
+        // And, symmetrically, no actionable row exists on an empty queue.
+        await expect(page.getByRole('link', { name: 'Isi Rekam Medis' })).toHaveCount(0);
+    });
 });
