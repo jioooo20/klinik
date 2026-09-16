@@ -15,6 +15,10 @@ export default function Create() {
         gender: '',
         phone: '',
         address: '',
+        blood_type: '',
+        allergies: '',
+        emergency_contact_name: '',
+        emergency_contact_phone: '',
     });
 
     const submit = (e: FormEvent) => {
@@ -108,6 +112,63 @@ export default function Create() {
                                 className="border-input flex w-full rounded-md border bg-transparent px-3 py-2 text-sm"
                             />
                             {errors.address && <p className="text-sm text-red-500">{errors.address}</p>}
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="blood_type">Golongan Darah</Label>
+                            <select
+                                id="blood_type"
+                                value={data.blood_type}
+                                onChange={(e) => setData('blood_type', e.target.value)}
+                                className="border-input flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm"
+                                aria-invalid={!!errors.blood_type}
+                            >
+                                <option value="">Pilih...</option>
+                                <option value="A">A</option>
+                                <option value="B">B</option>
+                                <option value="AB">AB</option>
+                                <option value="O">O</option>
+                            </select>
+                            {errors.blood_type && <p className="text-sm text-red-500">{errors.blood_type}</p>}
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="allergies">Alergi</Label>
+                            <textarea
+                                id="allergies"
+                                value={data.allergies}
+                                onChange={(e) => setData('allergies', e.target.value)}
+                                rows={2}
+                                className="border-input flex w-full rounded-md border bg-transparent px-3 py-2 text-sm"
+                                aria-invalid={!!errors.allergies}
+                            />
+                            {errors.allergies && <p className="text-sm text-red-500">{errors.allergies}</p>}
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="emergency_contact_name">Nama Kontak Darurat</Label>
+                            <Input
+                                id="emergency_contact_name"
+                                value={data.emergency_contact_name}
+                                onChange={(e) => setData('emergency_contact_name', e.target.value)}
+                                aria-invalid={!!errors.emergency_contact_name}
+                            />
+                            {errors.emergency_contact_name && (
+                                <p className="text-sm text-red-500">{errors.emergency_contact_name}</p>
+                            )}
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="emergency_contact_phone">Telepon Kontak Darurat</Label>
+                            <Input
+                                id="emergency_contact_phone"
+                                value={data.emergency_contact_phone}
+                                onChange={(e) => setData('emergency_contact_phone', e.target.value)}
+                                aria-invalid={!!errors.emergency_contact_phone}
+                            />
+                            {errors.emergency_contact_phone && (
+                                <p className="text-sm text-red-500">{errors.emergency_contact_phone}</p>
+                            )}
                         </div>
 
                         <div className="flex gap-2">

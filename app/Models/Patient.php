@@ -47,6 +47,20 @@ class Patient extends Model
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Resolve the Patient row linked to the given user, bypassing the tenant
+     * scope because a pasien's clinic_id may legitimately differ from the
+     * session default during cross-clinic flows. Used by the pasien
+     * self-service profile flow (Profil Saya) so no patient id is ever taken
+     * from the URL.
+     */
+    public static function forUser(User $user): ?self
+    {
+        return static::withoutClinicScope()
+            ->where('user_id', $user->id)
+            ->first();
+    }
+
     public function appointments(): HasMany
     {
         return $this->hasMany(Appointment::class);

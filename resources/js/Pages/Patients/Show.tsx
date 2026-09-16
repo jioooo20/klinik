@@ -11,7 +11,7 @@ import PatientsLayout from '@/Pages/Patients/_Layout';
 
 interface Patient {
     id: number;
-    nik: string;
+    nik: string | null;
     name: string;
     date_of_birth: string | null;
     gender: string;
@@ -73,7 +73,11 @@ export default function Show({ patient, appointments, medicalRecords }: ShowProp
             <div className="mb-4 flex items-center justify-between">
                 <div>
                     <h1 className="text-xl font-semibold text-slate-800">{patient.name}</h1>
-                    <p className="text-muted-foreground font-mono text-sm">{patient.nik}</p>
+                    {patient.nik && patient.nik.trim() !== '' ? (
+                        <p className="text-muted-foreground font-mono text-sm">{patient.nik}</p>
+                    ) : (
+                        <p className="text-muted-foreground text-sm italic">Belum ada NIK</p>
+                    )}
                 </div>
                 <div className="flex gap-2">
                     <Button asChild variant="outline">

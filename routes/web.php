@@ -74,6 +74,15 @@ Route::middleware(['auth', 'clinic'])->group(function () {
             ->name('patients.records.store');
     });
 
+    // Pasien self-service profile (Profil Saya).
+    // The Patient row is resolved from the authenticated user inside the
+    // controller — no {patient} parameter is accepted from the URL, so a
+    // pasien cannot target someone else's record.
+    Route::middleware('role:pasien')->group(function () {
+        Route::get('/profile', [PatientController::class, 'editProfile'])->name('profile.edit');
+        Route::put('/profile', [PatientController::class, 'updateProfile'])->name('profile.update');
+    });
+
     // Appointments (Phase 6 — KLK-028..KLK-031).
     Route::get('/appointments', [AppointmentController::class, 'index'])->name('appointments.index');
 

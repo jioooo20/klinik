@@ -42,6 +42,10 @@ class UpdatePatientRequest extends FormRequest
             'gender' => ['required', 'in:male,female'],
             'phone' => ['nullable', 'string', 'max:30'],
             'address' => ['nullable', 'string'],
+            'blood_type' => ['nullable', 'string', 'in:A,B,AB,O'],
+            'allergies' => ['nullable', 'string', 'max:1000'],
+            'emergency_contact_name' => ['nullable', 'string', 'max:150'],
+            'emergency_contact_phone' => ['nullable', 'string', 'max:30'],
         ];
     }
 
@@ -59,6 +63,10 @@ class UpdatePatientRequest extends FormRequest
             'date_of_birth.before' => 'Tanggal lahir harus sebelum hari ini.',
             'gender.required' => 'Jenis kelamin wajib dipilih.',
             'gender.in' => 'Jenis kelamin harus male atau female.',
+            'blood_type.in' => 'Golongan darah harus salah satu dari A, B, AB, atau O.',
+            'allergies.max' => 'Alergi maksimal 1000 karakter.',
+            'emergency_contact_name.max' => 'Nama kontak darurat maksimal 150 karakter.',
+            'emergency_contact_phone.max' => 'Telepon kontak darurat maksimal 30 karakter.',
         ];
     }
 }

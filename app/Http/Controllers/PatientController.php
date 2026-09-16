@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StorePatientRequest;
+use App\Http\Requests\UpdateOwnPatientRequest;
 use App\Http\Requests\UpdatePatientRequest;
 use App\Models\Patient;
 use Illuminate\Http\RedirectResponse;
@@ -136,6 +137,10 @@ class PatientController extends Controller
                 'gender' => $patient->gender,
                 'phone' => $patient->phone,
                 'address' => $patient->address,
+                'blood_type' => $patient->blood_type,
+                'allergies' => $patient->allergies,
+                'emergency_contact_name' => $patient->emergency_contact_name,
+                'emergency_contact_phone' => $patient->emergency_contact_phone,
             ],
         ]);
     }
@@ -150,6 +155,87 @@ class PatientController extends Controller
         return redirect()
             ->route('patients.show', $patient)
             ->with('success', 'Data pasien berhasil diperbarui.');
+    }
+
+    /**
+     * Show the pasien self-service profile form (Profil Saya).
+     *
+     * The patient row is resolved from the authenticated user, never from the
+     * URL, so a pasien cannot target another patient's record.
+     */
+    public function editProfile(Request $request): Response|RedirectResponse
+    {
+        $patient = $this->resolveOwnPatient($request);
+
+        if ($patient === null) {
+            return redirect()
+                ->route('dashboard.patient')
+                ->with('error', 'Akun Anda belum tertaut ke data pasien. Hubungi admin klinik.');
+        }
+
+        $this->authorize('updateSelf', $patient);
+
+        return Inertia::render('Profile/Edit', [
+            'patient' => [
+                'id' => $patient->id,
+                'nik' => $patient->nik,
+                'name' => $patient->name,
+                'blood_type' => $patient->blood_type,
+                'allergies' => $patient->allergies,
+                'phone' => $patient->phone,
+                'address' => $patient->address,
+                'emergency_contact_name' => $patient->emergency_contact_name,
+                'emergency_contact_phone' => $patient->emergency_contact_phone,
+            ],
+        ]);
+    }
+
+    /**
+     * Persist the pasien self-service profile update (strict whitelist).
+     */
+    public function updateProfile(UpdateOwnPatientRequest $request): RedirectResponse
+    {
+        // The /profile route carries no {patient} parameter, so resolve the
+        // row from the authenticated user — a pasien can never target another.
+        $patient = $this->resolveOwnPatient($request);
+
+        if ($patient === null) {
+            return redirect()
+                ->route('dashboard.patient')
+                ->with('error', 'Akun Anda belum tertaut ke data pasien. Hubungi admin klinik.');
+        }
+
+        // Defence-in-depth: validated() already only contains the six
+        // self-serviceable keys, but we whitelist again on write.
+        $patient->update([
+            'blood_type' => $request->validated('blood_type'),
+            'allergies' => $request->validated('allergies'),
+            'phone' => $request->validated('phone'),
+            'address' => $request->validated('address'),
+            'emergency_contact_name' => $request->validated('emergency_contact_name'),
+            'emergency_contact_phone' => $request->validated('emergency_contact_phone'),
+        ]);
+
+        return redirect()
+            ->route('profile.edit')
+            ->with('success', 'Profil berhasil diperbarui.');
+    }
+
+    /**
+     * Resolve the Patient row linked to the authenticated user.
+     *
+     * Uses withoutClinicScope() because a pasien's clinic_id may legitimately
+     * differ from the session's default scope during cross-clinic flows.
+     */
+    private function resolveOwnPatient(Request $request): ?Patient
+    {
+        $user = $request->user();
+
+        if ($user === null) {
+            return null;
+        }
+
+        return Patient::forUser($user);
     }
 
     /**
