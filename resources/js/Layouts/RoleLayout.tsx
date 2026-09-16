@@ -31,13 +31,21 @@ export default function RoleLayout({ title, accent, nav, children }: RoleLayoutP
     const { auth } = usePage<SharedProps>().props;
     const current = typeof window !== 'undefined' ? window.location.pathname : '';
 
+    // Pick the single most-specific matching nav href so exactly one item is
+    // highlighted: an exact match wins, otherwise the longest href that the
+    // current path is nested under (e.g. '/patients/5/records' -> '/patients').
+    const activeHref = nav
+        .map((item) => item.href)
+        .filter((href) => current === href || current.startsWith(`${href}/`))
+        .sort((a, b) => b.length - a.length)[0];
+
     return (
         <div className="flex min-h-screen bg-slate-50">
             <aside className="hidden w-64 flex-col border-r bg-white p-4 md:flex">
                 <div className={cn('mb-6 px-2 text-lg font-bold', accent)}>{title}</div>
                 <nav className="flex flex-1 flex-col gap-1">
                     {nav.map((item) => {
-                        const active = current === item.href;
+                        const active = item.href === activeHref;
                         return (
                             <Link
                                 key={item.label}
