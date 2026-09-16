@@ -14,6 +14,8 @@ interface VisitStats {
 
 interface QueueRow {
     id: number;
+    /** ID pasien (bukan id appointment) — dipakai untuk route rekam medis. */
+    patient_id: number | null;
     scheduled_at: string | null;
     status: string;
     queue_number: number | null;
@@ -91,9 +93,14 @@ export default function Doctor({ stats, queue }: DoctorProps) {
                                         <td className="px-4 py-3">{row.patient ?? '—'}</td>
                                         <td className="px-4 py-3 capitalize">{row.status}</td>
                                         <td className="px-4 py-3">
-                                            {!row.has_record && (
+                                            {!row.has_record && row.patient_id !== null && (
                                                 <Button asChild size="sm" variant="outline">
-                                                    <Link href={route('patients.records.create', row.id)}>
+                                                    <Link
+                                                        href={route(
+                                                            'patients.records.create',
+                                                            row.patient_id,
+                                                        )}
+                                                    >
                                                         Isi Rekam Medis
                                                     </Link>
                                                 </Button>

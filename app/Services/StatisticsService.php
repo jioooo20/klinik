@@ -151,6 +151,10 @@ class StatisticsService
     /**
      * Today's queue for a doctor (KLK-033 dokter dashboard).
      *
+     * `patient_id` disertakan agar tautan "Isi Rekam Medis" dapat memakai
+     * id pasien (bukan id appointment) — route patients.records.create
+     * di-bind ke model Patient.
+     *
      * @return Collection<int, array<string, mixed>>
      */
     public function getDoctorQueue(int $clinicId, int $doctorId): Collection
@@ -164,6 +168,7 @@ class StatisticsService
             ->get()
             ->map(fn (Appointment $appointment) => [
                 'id' => $appointment->id,
+                'patient_id' => $appointment->patient_id,
                 'scheduled_at' => $appointment->scheduled_at?->toIso8601String(),
                 'status' => $appointment->status instanceof \BackedEnum
                     ? $appointment->status->value
