@@ -34,4 +34,13 @@ export default function globalSetup(): void {
         stdio: 'inherit',
         env: { ...process.env, APP_ENV: 'e2e' },
     });
+
+    // A TODAY appointment with NO medical record, so the dokter dashboard's
+    // "Antrean Hari Ini" table has an actionable row and the "Isi Rekam Medis"
+    // button actually renders (every seeded appointment already has a record).
+    execFileSync('php', [path.join(root, 'tests', 'e2e', 'support', 'seed-today-queue.php')], {
+        cwd: root,
+        stdio: 'inherit',
+        env: { ...process.env, APP_ENV: 'e2e' },
+    });
 }
