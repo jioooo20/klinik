@@ -26,6 +26,9 @@ interface CreateProps {
 const textareaClass =
     'border-input flex w-full rounded-md border bg-transparent px-3 py-2 text-sm';
 
+/** Batas atas kode ICD-10 per rekam medis (selaras dengan validasi server). */
+const MAX_ICD10_CODES = 20;
+
 export default function Create({ patient, icd10Options }: CreateProps) {
     const { data, setData, post, processing, errors } = useForm({
         visited_at: new Date().toISOString().slice(0, 10),
@@ -129,6 +132,9 @@ export default function Create({ patient, icd10Options }: CreateProps) {
 
                         <fieldset className="space-y-2">
                             <legend className="text-sm font-medium">Diagnosis ICD-10</legend>
+                            <p className="text-xs text-muted-foreground">
+                                Dipilih {data.icd10_codes.length}/{MAX_ICD10_CODES} kode.
+                            </p>
                             <div className="grid max-h-56 grid-cols-1 gap-2 overflow-y-auto rounded-md border p-3 md:grid-cols-2">
                                 {icd10Options.map((option) => (
                                     <label
@@ -138,6 +144,10 @@ export default function Create({ patient, icd10Options }: CreateProps) {
                                         <input
                                             type="checkbox"
                                             checked={data.icd10_codes.includes(option.code)}
+                                            disabled={
+                                                !data.icd10_codes.includes(option.code) &&
+                                                data.icd10_codes.length >= MAX_ICD10_CODES
+                                            }
                                             onChange={(e) => toggleCode(option.code, e.target.checked)}
                                         />
                                         <span className="font-mono text-xs">{option.code}</span>
@@ -145,6 +155,9 @@ export default function Create({ patient, icd10Options }: CreateProps) {
                                     </label>
                                 ))}
                             </div>
+                            {errors.icd10_codes && (
+                                <p className="text-sm text-red-500">{errors.icd10_codes}</p>
+                            )}
                         </fieldset>
 
                         <div className="space-y-2">

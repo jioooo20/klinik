@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\MedicalRecord;
+use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreMedicalRecordRequest extends FormRequest
@@ -30,7 +31,29 @@ class StoreMedicalRecordRequest extends FormRequest
             'assessment' => ['required', 'string', 'max:5000'],
             'plan' => ['required', 'string', 'max:5000'],
 
-            'icd10_codes' => ['nullable', 'array'],
+            // Lebar kolom icd10_code = varchar(255). Batas 20 kode + aturan
+            // per-elemen max:10 di bawah menjamin muatan tidak pernah
+            // melampaui lebar kolom (20 x 10 + 19 koma = 219 karakter).
+            // Guard panjang total ditambahkan sebagai lapisan kedua.
+            'icd10_codes' => [
+                'nullable',
+                'array',
+                'max:20',
+                function (string $attribute, mixed $value, Closure $fail): void {
+                    if (! is_array($value)) {
+                        return;
+                    }
+
+                    $joined = implode(',', array_filter(
+                        array_map(fn ($code) => is_string($code) ? trim($code) : '', $value),
+                        fn ($code) => $code !== '',
+                    ));
+
+                    if (strlen($joined) > 255) {
+                        $fail('Total kode ICD-10 terlalu panjang (maksimal 255 karakter).');
+                    }
+                },
+            ],
             'icd10_codes.*' => ['string', 'max:10', 'exists:icd10_codes,code'],
 
             'vitals' => ['nullable', 'array'],
@@ -54,6 +77,7 @@ class StoreMedicalRecordRequest extends FormRequest
             'objective.required' => 'Objective (O) wajib diisi untuk finalisasi.',
             'assessment.required' => 'Assessment (A) wajib diisi untuk finalisasi.',
             'plan.required' => 'Plan (P) wajib diisi untuk finalisasi.',
+            'icd10_codes.max' => 'Maksimal 20 kode ICD-10 dapat dipilih.',
         ];
     }
 }

@@ -70,6 +70,13 @@ class StatisticsService
     /**
      * Top ICD-10 diagnoses by frequency (KLK-032).
      *
+     * Satu rekam medis dapat memuat BEBERAPA kode yang disimpan sebagai satu
+     * string berkoma ("A15,B50.9,I25.9"). Meng-GROUP BY kolom mentah akan
+     * menghasilkan entri palsu seperti "A15,B50.9,..." alih-alih menambah
+     * hitungan A15 dan B50.9 masing-masing. Karena itu tiap baris dipecah
+     * lebih dulu dengan `unnest(string_to_array(...))` (PostgreSQL LATERAL),
+     * lalu baru diagregasi per kode tunggal.
+     *
      * @return Collection<int, array{icd10_code: string, total: int}>
      */
     public function getTopDiagnoses(int $clinicId, int $limit = 10, ?int $doctorId = null): Collection
@@ -79,9 +86,12 @@ class StatisticsService
             ->whereNotNull('icd10_code')
             ->where('icd10_code', '<>', '')
             ->when($doctorId !== null, fn ($q) => $q->where('doctor_id', $doctorId))
-            ->selectRaw('icd10_code, COUNT(*) as total')
-            ->groupBy('icd10_code')
+            ->fromRaw("medical_records, LATERAL unnest(string_to_array(medical_records.icd10_code, ',')) AS icd10_code_item")
+            ->selectRaw('trim(icd10_code_item) as icd10_code, COUNT(*) as total')
+            ->whereRaw("trim(icd10_code_item) <> ''")
+            ->groupByRaw('trim(icd10_code_item)')
             ->orderByDesc('total')
+            ->orderBy('icd10_code')
             ->limit($limit)
             ->get()
             ->map(fn ($row) => [

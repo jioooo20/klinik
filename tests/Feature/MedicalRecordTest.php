@@ -154,6 +154,66 @@ class MedicalRecordTest extends TestCase
         );
     }
 
+    /**
+     * Regresi 2026-09-16: SQLSTATE[22001] saat menyimpan banyak kode ICD-10.
+     *
+     * Form mengirim array kode; controller menggabungkannya dengan koma ke satu
+     * kolom. Sebelum kolom dilebarkan ke varchar(255), 18 kode (~96 karakter)
+     * ditolak PostgreSQL karena kolom lama hanya varchar(10).
+     */
+    public function test_doctor_can_store_many_icd10_codes_without_truncation(): void
+    {
+        $clinic = Clinic::factory()->create();
+        [$user] = $this->makeDoctor($clinic);
+        $patient = Patient::factory()->create(['clinic_id' => $clinic->id]);
+
+        $codes = [
+            'A15', 'B50.9', 'I25.9', 'I50.9', 'J03.9', 'J18.9', 'J44.9',
+            'K21.0', 'K29.7', 'K30', 'L30.9', 'L50.9', 'M25.5', 'M54.5',
+            'R42', 'R50.9', 'R51', 'Z76.0',
+        ];
+
+        foreach ($codes as $code) {
+            \App\Models\Icd10Code::query()->firstOrCreate(
+                ['code' => $code],
+                ['name' => 'Uji '.$code],
+            );
+        }
+
+        $this->actingAs($user);
+
+        $this->post("/patients/{$patient->id}/records", $this->payload() + [
+            'icd10_codes' => $codes,
+        ])->assertRedirect();
+
+        $record = MedicalRecord::withoutClinicScope()->firstOrFail();
+
+        $this->assertSame(implode(',', $codes), $record->icd10_code);
+        $this->assertSame(count($codes), substr_count($record->icd10_code, ',') + 1);
+    }
+
+    public function test_store_rejects_more_than_twenty_icd10_codes(): void
+    {
+        $clinic = Clinic::factory()->create();
+        [$user] = $this->makeDoctor($clinic);
+        $patient = Patient::factory()->create(['clinic_id' => $clinic->id]);
+
+        $codes = [];
+        foreach (range(1, 21) as $i) {
+            $code = 'Z'.str_pad((string) $i, 2, '0', STR_PAD_LEFT);
+            \App\Models\Icd10Code::query()->firstOrCreate(['code' => $code], ['name' => 'Uji '.$code]);
+            $codes[] = $code;
+        }
+
+        $this->actingAs($user);
+
+        $this->post("/patients/{$patient->id}/records", $this->payload() + [
+            'icd10_codes' => $codes,
+        ])->assertSessionHasErrors('icd10_codes');
+
+        $this->assertDatabaseCount('medical_records', 0);
+    }
+
     public function test_medical_record_cannot_be_deleted(): void
     {
         $clinic = Clinic::factory()->create();
