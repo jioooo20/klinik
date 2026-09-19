@@ -30,6 +30,20 @@ const textareaClass =
 const MAX_ICD10_CODES = 20;
 
 /**
+ * Tanggal "hari ini" menurut zona waktu browser, dalam format Y-m-d.
+ *
+ * `new Date().toISOString()` mengembalikan tanggal UTC, sehingga pengguna WIB
+ * sebelum pukul 07:00 akan mendapat tanggal kemarin. Sekarang default memakai
+ * tanggal lokal agar konsisten dengan timezone aplikasi (Asia/Jakarta).
+ */
+function todayLocalIso(): string {
+    const now = new Date();
+    const offsetMinutes = -now.getTimezoneOffset();
+
+    return new Date(now.getTime() - offsetMinutes * 60_000).toISOString().slice(0, 10);
+}
+
+/**
  * Batas fisiologis tanda vital (selaras dengan rules() di Form Request).
  * Sistolik/diastolik = mmHg, suhu = °C, nadi/respirasi = kali per menit.
  */
@@ -43,7 +57,7 @@ const VITAL_BOUNDS = {
 
 export default function Create({ patient, icd10Options }: CreateProps) {
     const { data, setData, post, processing, errors } = useForm({
-        visited_at: new Date().toISOString().slice(0, 10),
+        visited_at: todayLocalIso(),
         subjective: '',
         objective: '',
         assessment: '',

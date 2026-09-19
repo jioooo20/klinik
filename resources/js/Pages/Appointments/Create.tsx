@@ -31,6 +31,35 @@ const SLOTS = Array.from({ length: 10 }, (_, i) => {
     return `${hour}:00`;
 });
 
+/**
+ * Ubah tanggal + slot lokal (mis. "2026-09-19" + "11:00") menjadi ISO-8601
+ * dengan offset timezone browser (mis. "2026-09-19T11:00:00+07:00").
+ *
+ * Tanpa offset, string telanjang "2026-09-19T11:00" akan diartikan server
+ * sebagai UTC (bukan WIB), sehingga jam bergeser +7 (11:00 tersimpan sebagai
+ * 18:00 WIB). Menyertakan offset membuat instan yang dikirim tidak ambigu.
+ */
+function toOffsetIso(date: string, slot: string): string {
+    const [year, month, day] = date.split('-').map(Number);
+    const [hour, minute] = slot.split(':').map(Number);
+
+    const local = new Date(year, month - 1, day, hour, minute, 0);
+    const offsetMinutes = -local.getTimezoneOffset();
+    const sign = offsetMinutes >= 0 ? '+' : '-';
+    const abs = Math.abs(offsetMinutes);
+    const offset = `${sign}${String(Math.floor(abs / 60)).padStart(2, '0')}:${String(abs % 60).padStart(2, '0')}`;
+
+    return `${date}T${slot}:00${offset}`;
+}
+
+/** Tanggal "hari ini" menurut zona waktu browser (bukan UTC). */
+function todayLocalIso(): string {
+    const now = new Date();
+    const offsetMinutes = -now.getTimezoneOffset();
+
+    return new Date(now.getTime() - offsetMinutes * 60_000).toISOString().slice(0, 10);
+}
+
 export default function Create({ doctors, takenSlots, isAdmin }: CreateProps) {
     const [doctorId, setDoctorId] = useState<number | ''>('');
     const [date, setDate] = useState('');
@@ -61,7 +90,7 @@ export default function Create({ doctors, takenSlots, isAdmin }: CreateProps) {
             return;
         }
 
-        const scheduledAt = `${date}T${slot}:00`;
+        const scheduledAt = toOffsetIso(date, slot);
 
         setData('doctor_id', doctorId);
         setData('scheduled_at', scheduledAt);
@@ -113,7 +142,7 @@ export default function Create({ doctors, takenSlots, isAdmin }: CreateProps) {
                                 id="date"
                                 type="date"
                                 value={date}
-                                min={new Date().toISOString().slice(0, 10)}
+                                min={todayLocalIso()}
                                 onChange={(e) => {
                                     setDate(e.target.value);
                                     setSlot('');
@@ -130,6 +159,10 @@ export default function Create({ doctors, takenSlots, isAdmin }: CreateProps) {
                             ) : (
                                 <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
                                     {SLOTS.map((s) => {
+                                        // Dibandingkan sebagai wall-clock "Y-m-d\TH:i" apa
+                                        // adanya — sama persis dengan yang dikirim server di
+                                        // AppointmentController::create() (format('Y-m-d\TH:i')
+                                        // pada scheduled_at yang dirender di TZ aplikasi).
                                         const value = `${date}T${s}`;
                                         const disabled = isTaken(value);
                                         const active = slot === s;
