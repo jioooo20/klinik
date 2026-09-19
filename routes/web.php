@@ -48,8 +48,19 @@ Route::middleware(['auth', 'clinic'])->group(function () {
         Route::put('/patients/{patient}', [PatientController::class, 'update'])->name('patients.update');
         Route::delete('/patients/{patient}', [PatientController::class, 'destroy'])->name('patients.destroy');
 
-        // Doctors.
+        // Doctors (admin only).
+        // CRUD akun dokter: admin mengelola AKUN (users) + data dokter (doctors).
+        // Hapus/delete TIDAK disediakan — satu-satunya cara menonaktifkan dokter
+        // adalah mengubah `is_active = false` (dokter tertaut ke appointments &
+        // medical_records, sehingga hard delete akan memutus riwayat).
+        // NOTE: static `/doctors/create` WAJIB dideklarasikan SEBELUM route
+        // dinamis `/doctors/{doctor}` agar `create` tidak terikat ke parameter
+        // {doctor} (menyebabkan cast error bigint — SQLSTATE 22P02).
         Route::get('/doctors', [DoctorController::class, 'index'])->name('doctors.index');
+        Route::get('/doctors/create', [DoctorController::class, 'create'])->name('doctors.create');
+        Route::post('/doctors', [DoctorController::class, 'store'])->name('doctors.store');
+        Route::get('/doctors/{doctor}/edit', [DoctorController::class, 'edit'])->name('doctors.edit');
+        Route::put('/doctors/{doctor}', [DoctorController::class, 'update'])->name('doctors.update');
     });
 
     // Medical records (Phase 5 — KLK-023..KLK-027).

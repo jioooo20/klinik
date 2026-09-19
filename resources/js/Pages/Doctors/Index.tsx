@@ -1,4 +1,4 @@
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
@@ -7,6 +7,7 @@ import AdminLayout from '@/Layouts/AdminLayout';
 interface DoctorRow {
     id: number;
     name: string | null;
+    email: string | null;
     specialty: string | null;
     str_number: string | null;
     is_active: boolean;
@@ -27,9 +28,18 @@ export default function Index({ doctors }: IndexProps) {
             <Head title="Daftar Dokter" />
             <Card className="mx-auto max-w-5xl">
                 <CardHeader>
-                    <CardTitle>Daftar Dokter</CardTitle>
+                    <div className="flex items-center justify-between">
+                        <CardTitle>Daftar Dokter</CardTitle>
+                        <Link href={route('doctors.create')}>
+                            <Button size="sm">Tambah Dokter</Button>
+                        </Link>
+                    </div>
                 </CardHeader>
                 <CardContent>
+                    <p className="mb-4 text-sm text-muted-foreground">
+                        Untuk menonaktifkan dokter, ubah status menjadi &quot;Nonaktif&quot; pada formulir edit.
+                        Data dokter tidak dapat dihapus karena tertaut dengan riwayat janji temu dan rekam medis.
+                    </p>
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                             <thead>
@@ -38,12 +48,13 @@ export default function Index({ doctors }: IndexProps) {
                                     <th className="px-3 py-2 text-left font-medium">Spesialisasi</th>
                                     <th className="px-3 py-2 text-left font-medium">No. STR</th>
                                     <th className="px-3 py-2 text-left font-medium">Status</th>
+                                    <th className="px-3 py-2 text-right font-medium">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {doctors.data.length === 0 ? (
                                     <tr>
-                                        <td colSpan={4} className="py-8 text-center text-muted-foreground">
+                                        <td colSpan={5} className="py-8 text-center text-muted-foreground">
                                             Belum ada data dokter.
                                         </td>
                                     </tr>
@@ -63,6 +74,13 @@ export default function Index({ doctors }: IndexProps) {
                                                 >
                                                     {d.is_active ? 'Aktif' : 'Nonaktif'}
                                                 </span>
+                                            </td>
+                                            <td className="px-3 py-2 text-right">
+                                                <Link href={route('doctors.edit', d.id)}>
+                                                    <Button variant="outline" size="sm">
+                                                        Ubah
+                                                    </Button>
+                                                </Link>
                                             </td>
                                         </tr>
                                     ))
