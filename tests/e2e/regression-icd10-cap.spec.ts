@@ -66,7 +66,8 @@ test.describe('Regression: ICD-10 20-code cap + 18-code save', () => {
             objective: 'KU baik, TD 120/80.',
             assessment: 'Multi-diagnosis.',
             plan: 'Lanjutkan terapi.',
-            tensi: '120/80',
+            sistolik: '120',
+            diastolik: '80',
             suhu: '36.8',
         });
 

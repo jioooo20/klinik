@@ -18,7 +18,13 @@ interface RecordDetail {
     assessment: string | null;
     plan: string | null;
     icd10_codes: string[];
-    vitals: { tensi?: string; suhu?: string; nadi?: string; respirasi?: string } | null;
+    vitals: {
+        sistolik?: string | number;
+        diastolik?: string | number;
+        suhu?: string | number;
+        nadi?: string | number;
+        respirasi?: string | number;
+    } | null;
     prescription: string[];
     doctor: string | null;
 }
@@ -115,10 +121,13 @@ export default function Show({ record, patient, canUpdate }: ShowProps) {
                             <CardTitle>Tanda Vital</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-2 text-sm">
-                            <VitalRow label="Tensi" value={record.vitals?.tensi} />
-                            <VitalRow label="Suhu" value={record.vitals?.suhu} />
-                            <VitalRow label="Nadi" value={record.vitals?.nadi} />
-                            <VitalRow label="Respirasi" value={record.vitals?.respirasi} />
+                            <VitalRow label="Tensi" value={formatTensi(record.vitals)} />
+                            <VitalRow label="Suhu" value={formatVital(record.vitals?.suhu, '°C')} />
+                            <VitalRow label="Nadi" value={formatVital(record.vitals?.nadi, 'x/menit')} />
+                            <VitalRow
+                                label="Respirasi"
+                                value={formatVital(record.vitals?.respirasi, 'x/menit')}
+                            />
                         </CardContent>
                     </Card>
 
@@ -151,4 +160,38 @@ function VitalRow({ label, value }: { label: string; value?: string }) {
             <span className="font-medium">{value || '—'}</span>
         </div>
     );
+}
+
+/** Nilai numerik tanda vital tunggal dengan satuan; '—' bila kosong. */
+function formatVital(value: string | number | undefined | null, unit: string): string {
+    if (value === undefined || value === null || value === '') {
+        return '—';
+    }
+
+    return `${value} ${unit}`;
+}
+
+/** Gabungkan sistolik/diastolik menjadi satu bacaan, mis. "120/80 mmHg". */
+function formatTensi(
+    vitals:
+        | { sistolik?: string | number; diastolik?: string | number }
+        | null
+        | undefined,
+): string {
+    const sistolik = vitals?.sistolik;
+    const diastolik = vitals?.diastolik;
+    const hasSistolik = sistolik !== undefined && sistolik !== null && sistolik !== '';
+    const hasDiastolik = diastolik !== undefined && diastolik !== null && diastolik !== '';
+
+    if (hasSistolik && hasDiastolik) {
+        return `${sistolik}/${diastolik} mmHg`;
+    }
+    if (hasSistolik) {
+        return `${sistolik} mmHg`;
+    }
+    if (hasDiastolik) {
+        return `${diastolik} mmHg`;
+    }
+
+    return '—';
 }

@@ -21,7 +21,13 @@ interface RecordForm {
     assessment: string | null;
     plan: string | null;
     icd10_codes: string[];
-    vitals: { tensi?: string; suhu?: string; nadi?: string; respirasi?: string } | null;
+    vitals: {
+        sistolik?: string | number;
+        diastolik?: string | number;
+        suhu?: string | number;
+        nadi?: string | number;
+        respirasi?: string | number;
+    } | null;
     prescription: string;
 }
 
@@ -42,6 +48,18 @@ const textareaClass =
 /** Batas atas kode ICD-10 per rekam medis (selaras dengan validasi server). */
 const MAX_ICD10_CODES = 20;
 
+/**
+ * Batas fisiologis tanda vital (selaras dengan rules() di Form Request).
+ * Sistolik/diastolik = mmHg, suhu = °C, nadi/respirasi = kali per menit.
+ */
+const VITAL_BOUNDS = {
+    sistolik: { min: 60, max: 260, step: 1 },
+    diastolik: { min: 30, max: 160, step: 1 },
+    suhu: { min: 30, max: 45, step: 0.1 },
+    nadi: { min: 20, max: 250, step: 1 },
+    respirasi: { min: 5, max: 80, step: 1 },
+} as const;
+
 export default function Edit({ record, patient, icd10Options }: EditProps) {
     const { data, setData, put, processing, errors } = useForm({
         visited_at: record.visited_at ?? '',
@@ -51,7 +69,8 @@ export default function Edit({ record, patient, icd10Options }: EditProps) {
         plan: record.plan ?? '',
         icd10_codes: record.icd10_codes ?? [],
         vitals: {
-            tensi: record.vitals?.tensi ?? '',
+            sistolik: record.vitals?.sistolik ?? '',
+            diastolik: record.vitals?.diastolik ?? '',
             suhu: record.vitals?.suhu ?? '',
             nadi: record.vitals?.nadi ?? '',
             respirasi: record.vitals?.respirasi ?? '',
@@ -132,19 +151,127 @@ export default function Edit({ record, patient, icd10Options }: EditProps) {
 
                         <fieldset className="space-y-3">
                             <legend className="text-sm font-medium">Tanda Vital</legend>
-                            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-                                {(['tensi', 'suhu', 'nadi', 'respirasi'] as const).map((vital) => (
-                                    <div className="space-y-2" key={vital}>
-                                        <Label htmlFor={`vital-${vital}`} className="capitalize">
-                                            {vital}
-                                        </Label>
-                                        <Input
-                                            id={`vital-${vital}`}
-                                            value={data.vitals[vital]}
-                                            onChange={(e) => setVital(vital, e.target.value)}
-                                        />
+
+                            <div className="space-y-2">
+                                <Label>Tekanan Darah (mmHg)</Label>
+                                <div className="flex items-start gap-2">
+                                    <div className="flex-1 space-y-1">
+                                        <div className="flex items-center gap-2">
+                                            <Input
+                                                id="vital-sistolik"
+                                                type="number"
+                                                inputMode="numeric"
+                                                step={VITAL_BOUNDS.sistolik.step}
+                                                min={VITAL_BOUNDS.sistolik.min}
+                                                max={VITAL_BOUNDS.sistolik.max}
+                                                placeholder="Sistolik"
+                                                value={data.vitals.sistolik}
+                                                onChange={(e) => setVital('sistolik', e.target.value)}
+                                                aria-invalid={!!errors['vitals.sistolik']}
+                                            />
+                                            <span className="text-sm text-muted-foreground">mmHg</span>
+                                        </div>
+                                        <span className="text-xs text-muted-foreground">Sistolik</span>
+                                        {errors['vitals.sistolik'] && (
+                                            <p className="text-sm text-red-500">{errors['vitals.sistolik']}</p>
+                                        )}
                                     </div>
-                                ))}
+
+                                    <span className="pt-2 text-lg text-muted-foreground">/</span>
+
+                                    <div className="flex-1 space-y-1">
+                                        <div className="flex items-center gap-2">
+                                            <Input
+                                                id="vital-diastolik"
+                                                type="number"
+                                                inputMode="numeric"
+                                                step={VITAL_BOUNDS.diastolik.step}
+                                                min={VITAL_BOUNDS.diastolik.min}
+                                                max={VITAL_BOUNDS.diastolik.max}
+                                                placeholder="Diastolik"
+                                                value={data.vitals.diastolik}
+                                                onChange={(e) => setVital('diastolik', e.target.value)}
+                                                aria-invalid={!!errors['vitals.diastolik']}
+                                            />
+                                            <span className="text-sm text-muted-foreground">mmHg</span>
+                                        </div>
+                                        <span className="text-xs text-muted-foreground">Diastolik</span>
+                                        {errors['vitals.diastolik'] && (
+                                            <p className="text-sm text-red-500">{errors['vitals.diastolik']}</p>
+                                        )}
+                                    </div>
+                                </div>
+                                {errors.vitals && (
+                                    <p className="text-sm text-red-500">{errors.vitals}</p>
+                                )}
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+                                <div className="space-y-2">
+                                    <Label htmlFor="vital-suhu">Suhu</Label>
+                                    <div className="flex items-center gap-2">
+                                        <Input
+                                            id="vital-suhu"
+                                            type="number"
+                                            inputMode="decimal"
+                                            step={VITAL_BOUNDS.suhu.step}
+                                            min={VITAL_BOUNDS.suhu.min}
+                                            max={VITAL_BOUNDS.suhu.max}
+                                            placeholder="36.8"
+                                            value={data.vitals.suhu}
+                                            onChange={(e) => setVital('suhu', e.target.value)}
+                                            aria-invalid={!!errors['vitals.suhu']}
+                                        />
+                                        <span className="text-sm text-muted-foreground">°C</span>
+                                    </div>
+                                    {errors['vitals.suhu'] && (
+                                        <p className="text-sm text-red-500">{errors['vitals.suhu']}</p>
+                                    )}
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="vital-nadi">Nadi</Label>
+                                    <div className="flex items-center gap-2">
+                                        <Input
+                                            id="vital-nadi"
+                                            type="number"
+                                            inputMode="numeric"
+                                            step={VITAL_BOUNDS.nadi.step}
+                                            min={VITAL_BOUNDS.nadi.min}
+                                            max={VITAL_BOUNDS.nadi.max}
+                                            placeholder="80"
+                                            value={data.vitals.nadi}
+                                            onChange={(e) => setVital('nadi', e.target.value)}
+                                            aria-invalid={!!errors['vitals.nadi']}
+                                        />
+                                        <span className="text-sm text-muted-foreground">x/menit</span>
+                                    </div>
+                                    {errors['vitals.nadi'] && (
+                                        <p className="text-sm text-red-500">{errors['vitals.nadi']}</p>
+                                    )}
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="vital-respirasi">Respirasi</Label>
+                                    <div className="flex items-center gap-2">
+                                        <Input
+                                            id="vital-respirasi"
+                                            type="number"
+                                            inputMode="numeric"
+                                            step={VITAL_BOUNDS.respirasi.step}
+                                            min={VITAL_BOUNDS.respirasi.min}
+                                            max={VITAL_BOUNDS.respirasi.max}
+                                            placeholder="18"
+                                            value={data.vitals.respirasi}
+                                            onChange={(e) => setVital('respirasi', e.target.value)}
+                                            aria-invalid={!!errors['vitals.respirasi']}
+                                        />
+                                        <span className="text-sm text-muted-foreground">x/menit</span>
+                                    </div>
+                                    {errors['vitals.respirasi'] && (
+                                        <p className="text-sm text-red-500">{errors['vitals.respirasi']}</p>
+                                    )}
+                                </div>
                             </div>
                         </fieldset>
 

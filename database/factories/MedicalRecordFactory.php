@@ -30,13 +30,11 @@ class MedicalRecordFactory extends Factory
             'plan' => fake()->sentence(),
             'icd10_code' => fake()->randomElement(['J00', 'A09', 'K30', 'M54', 'I10']),
             'vitals' => [
-                'tensi' => fake()->numberBetween(100, 140).'/'.fake()->numberBetween(60, 90),
+                'sistolik' => fake()->numberBetween(100, 140),
+                'diastolik' => fake()->numberBetween(60, 90),
                 'suhu' => fake()->randomFloat(1, 36, 39),
                 'nadi' => fake()->numberBetween(60, 100),
-                'rr' => fake()->numberBetween(14, 22),
-                'spo2' => fake()->numberBetween(95, 100),
-                'bb' => fake()->randomFloat(1, 40, 90),
-                'tb' => fake()->numberBetween(140, 180),
+                'respirasi' => fake()->numberBetween(14, 22),
             ],
             'prescription' => [
                 ['name' => 'Paracetamol', 'dose' => '500mg', 'frequency' => '3x1'],

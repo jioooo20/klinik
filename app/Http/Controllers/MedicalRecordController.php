@@ -248,22 +248,29 @@ class MedicalRecordController extends Controller
 
     /**
      * Coerce vitals to string values for HTML form inputs, filling any
-     * missing key with an empty string. The seeder stores numeric values
-     * for suhu/nadi while UpdateMedicalRecordRequest validates them as
-     * strings, so normalisation here prevents silent 422 failures.
+     * missing key with an empty string. The seeder/factory stores numeric
+     * values (bobot), while the Edit form binds <input type="number"> which
+     * expects a string value; normalisation here keeps round-trips lossless
+     * and prevents an empty stringy value from reaching the numeric rules.
      *
-     * @return array{tensi: string, suhu: string, nadi: string, respirasi: string}
+     * @return array{sistolik: string, diastolik: string, suhu: string, nadi: string, respirasi: string}
      */
     private function normalizeVitals(mixed $vitals): array
     {
-        $defaults = ['tensi' => '', 'suhu' => '', 'nadi' => '', 'respirasi' => ''];
+        $defaults = [
+            'sistolik' => '',
+            'diastolik' => '',
+            'suhu' => '',
+            'nadi' => '',
+            'respirasi' => '',
+        ];
 
         if (! is_array($vitals)) {
             return $defaults;
         }
 
         foreach ($defaults as $key => $default) {
-            if (isset($vitals[$key])) {
+            if (isset($vitals[$key]) && $vitals[$key] !== '') {
                 $defaults[$key] = (string) $vitals[$key];
             }
         }

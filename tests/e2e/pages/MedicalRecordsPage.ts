@@ -14,7 +14,8 @@ export class MedicalRecordCreatePage {
         objective: string;
         assessment: string;
         plan: string;
-        tensi?: string;
+        sistolik?: string;
+        diastolik?: string;
         suhu?: string;
     }): Promise<void> {
         await this.page.locator('#subjective').fill(input.subjective);
@@ -22,8 +23,11 @@ export class MedicalRecordCreatePage {
         await this.page.locator('#assessment').fill(input.assessment);
         await this.page.locator('#plan').fill(input.plan);
 
-        if (input.tensi) {
-            await this.page.locator('#vital-tensi').fill(input.tensi);
+        if (input.sistolik) {
+            await this.page.locator('#vital-sistolik').fill(input.sistolik);
+        }
+        if (input.diastolik) {
+            await this.page.locator('#vital-diastolik').fill(input.diastolik);
         }
         if (input.suhu) {
             await this.page.locator('#vital-suhu').fill(input.suhu);

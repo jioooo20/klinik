@@ -402,7 +402,7 @@ Per baris: "Detail" → /medical-records/{id}
 | Objective (O) | ✔ | temuan objektif |
 | Assessment (A) | ✔ | penilaian/diagnosis |
 | Plan (P) | ✔ | rencana tindak lanjut |
-| Tanda Vital | opsional | tensi, suhu, nadi, respirasi |
+| Tanda Vital | opsional | tekanan darah (sistolik/diastolik mmHg), suhu (°C), nadi & respirasi (x/menit) |
 | Diagnosis ICD-10 | opsional | checkbox majemuk dari 46+ kode |
 | Resep | opsional | satu baris per obat |
 

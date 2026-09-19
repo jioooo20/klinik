@@ -21,7 +21,8 @@ test.describe('Medical Records (KLK-023..KLK-027)', () => {
             objective: 'TD 120/80, suhu 36.7C.',
             assessment: 'Hipertensi grade 1.',
             plan: 'Diet rendah garam, obat antihipertensi.',
-            tensi: '120/80',
+            sistolik: '120',
+            diastolik: '80',
             suhu: '36.7',
         });
         await create.submit();
@@ -29,6 +30,9 @@ test.describe('Medical Records (KLK-023..KLK-027)', () => {
         // After submit, should land on the record detail or patient records list
         const show = new MedicalRecordShowPage(page);
         await show.expectSoapVisible();
+
+        // The split blood pressure renders as one readable value.
+        await expect(page.getByText('120/80 mmHg')).toBeVisible();
     });
 
     test('dokter can view patient medical record history @KLK-025', async ({ page }) => {

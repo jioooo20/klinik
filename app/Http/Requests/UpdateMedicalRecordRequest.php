@@ -59,11 +59,35 @@ class UpdateMedicalRecordRequest extends FormRequest
             ],
             'icd10_codes.*' => ['string', 'max:10', 'exists:icd10_codes,code'],
 
-            'vitals' => ['nullable', 'array'],
-            'vitals.tensi' => ['nullable', 'string', 'max:20'],
-            'vitals.suhu' => ['nullable', 'string', 'max:20'],
-            'vitals.nadi' => ['nullable', 'string', 'max:20'],
-            'vitals.respirasi' => ['nullable', 'string', 'max:20'],
+            // Tanda vital (opsional seluruhnya). Semua nilai numerik dengan
+            // batas fisiologis; tensi dipecah menjadi sistolik + diastolik.
+            // Rentang dewasa mengacu pada pedoman AHA/ACC (tekanan darah) dan
+            // batas alarm NEWS2 / atlas tanda vital dewasa sebagai pagar
+            // keamanan input (bukan ambang diagnosis).
+            'vitals' => [
+                'nullable',
+                'array',
+                function (string $attribute, mixed $value, Closure $fail): void {
+                    if (! is_array($value)) {
+                        return;
+                    }
+
+                    // Sistolik harus > diastolik; nilai terbalik/identik tidak
+                    // fisiologis untuk tekanan darah.
+                    $sistolik = $value['sistolik'] ?? null;
+                    $diastolik = $value['diastolik'] ?? null;
+
+                    if ($sistolik !== null && $diastolik !== null
+                        && (int) $sistolik <= (int) $diastolik) {
+                        $fail('Tekanan darah sistolik harus lebih besar daripada diastolik.');
+                    }
+                },
+            ],
+            'vitals.sistolik' => ['nullable', 'integer', 'between:60,260'],
+            'vitals.diastolik' => ['nullable', 'integer', 'between:30,160'],
+            'vitals.suhu' => ['nullable', 'numeric', 'between:30,45'],
+            'vitals.nadi' => ['nullable', 'integer', 'between:20,250'],
+            'vitals.respirasi' => ['nullable', 'integer', 'between:5,80'],
 
             'prescription' => ['nullable', 'string', 'max:5000'],
         ];
@@ -81,6 +105,17 @@ class UpdateMedicalRecordRequest extends FormRequest
             'assessment.required' => 'Assessment (A) wajib diisi untuk finalisasi.',
             'plan.required' => 'Plan (P) wajib diisi untuk finalisasi.',
             'icd10_codes.max' => 'Maksimal 20 kode ICD-10 dapat dipilih.',
+
+            'vitals.sistolik.integer' => 'Tekanan darah sistolik harus berupa angka.',
+            'vitals.sistolik.between' => 'Tekanan darah sistolik harus antara 60 dan 260 mmHg.',
+            'vitals.diastolik.integer' => 'Tekanan darah diastolik harus berupa angka.',
+            'vitals.diastolik.between' => 'Tekanan darah diastolik harus antara 30 dan 160 mmHg.',
+            'vitals.suhu.numeric' => 'Suhu tubuh harus berupa angka.',
+            'vitals.suhu.between' => 'Suhu tubuh harus antara 30 dan 45 °C.',
+            'vitals.nadi.integer' => 'Nadi harus berupa angka.',
+            'vitals.nadi.between' => 'Nadi harus antara 20 dan 250 kali per menit.',
+            'vitals.respirasi.integer' => 'Respirasi harus berupa angka.',
+            'vitals.respirasi.between' => 'Respirasi harus antara 5 dan 80 kali per menit.',
         ];
     }
 }

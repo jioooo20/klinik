@@ -45,7 +45,7 @@ class MedicalRecordTest extends TestCase
             'objective' => 'Suhu 38.5C, faring hiperemis.',
             'assessment' => 'Suspek demam tifoid.',
             'plan' => 'Istirahat, cairan, antibiotik sesuai indikasi.',
-            'vitals' => ['tensi' => '120/80', 'suhu' => '38.5'],
+            'vitals' => ['sistolik' => 120, 'diastolik' => 80, 'suhu' => 38.5, 'nadi' => 92, 'respirasi' => 20],
         ];
     }
 
@@ -212,6 +212,110 @@ class MedicalRecordTest extends TestCase
         ])->assertSessionHasErrors('icd10_codes');
 
         $this->assertDatabaseCount('medical_records', 0);
+    }
+
+    /**
+     * Payload dasar tanpa key yang diuji agar tiap kasus mengisolasi satu
+     * pelanggaran aturan; mengembalikan 422 dengan error pada key yang diminta.
+     *
+     * @param  array<string, mixed>  $vitals
+     */
+    private function assertVitalsRejected(array $vitals, string $errorKey): void
+    {
+        $clinic = Clinic::factory()->create();
+        [$user] = $this->makeDoctor($clinic);
+        $patient = Patient::factory()->create(['clinic_id' => $clinic->id]);
+
+        $this->actingAs($user);
+
+        $payload = $this->payload();
+        $payload['vitals'] = $vitals;
+
+        $this->post("/patients/{$patient->id}/records", $payload)
+            ->assertSessionHasErrors($errorKey);
+
+        $this->assertDatabaseCount('medical_records', 0);
+    }
+
+    public function test_vitals_accept_the_new_numeric_shape(): void
+    {
+        $clinic = Clinic::factory()->create();
+        [$user] = $this->makeDoctor($clinic);
+        $patient = Patient::factory()->create(['clinic_id' => $clinic->id]);
+
+        $this->actingAs($user);
+
+        $this->post("/patients/{$patient->id}/records", $this->payload())
+            ->assertRedirect();
+
+        $record = MedicalRecord::withoutClinicScope()->firstOrFail();
+
+        $this->assertSame(120, (int) $record->vitals['sistolik']);
+        $this->assertSame(80, (int) $record->vitals['diastolik']);
+        $this->assertSame(38.5, (float) $record->vitals['suhu']);
+        $this->assertSame(92, (int) $record->vitals['nadi']);
+        $this->assertSame(20, (int) $record->vitals['respirasi']);
+    }
+
+    public function test_vitals_are_optional_and_can_be_omitted(): void
+    {
+        $clinic = Clinic::factory()->create();
+        [$user] = $this->makeDoctor($clinic);
+        $patient = Patient::factory()->create(['clinic_id' => $clinic->id]);
+
+        $this->actingAs($user);
+
+        $payload = $this->payload();
+        unset($payload['vitals']);
+
+        $this->post("/patients/{$patient->id}/records", $payload)->assertRedirect();
+
+        $this->assertDatabaseCount('medical_records', 1);
+    }
+
+    public function test_vitals_reject_non_numeric_sistolik(): void
+    {
+        $this->assertVitalsRejected(['sistolik' => 'abc'], 'vitals.sistolik');
+    }
+
+    public function test_vitals_reject_out_of_range_sistolik(): void
+    {
+        $this->assertVitalsRejected(['sistolik' => 500], 'vitals.sistolik');
+    }
+
+    public function test_vitals_reject_out_of_range_diastolik(): void
+    {
+        $this->assertVitalsRejected(['diastolik' => 5], 'vitals.diastolik');
+    }
+
+    public function test_vitals_reject_non_numeric_suhu(): void
+    {
+        $this->assertVitalsRejected(['suhu' => 'panas'], 'vitals.suhu');
+    }
+
+    public function test_vitals_reject_out_of_range_suhu(): void
+    {
+        $this->assertVitalsRejected(['suhu' => 60], 'vitals.suhu');
+    }
+
+    public function test_vitals_reject_non_numeric_nadi(): void
+    {
+        $this->assertVitalsRejected(['nadi' => 'cepat'], 'vitals.nadi');
+    }
+
+    public function test_vitals_reject_out_of_range_respirasi(): void
+    {
+        $this->assertVitalsRejected(['respirasi' => 200], 'vitals.respirasi');
+    }
+
+    public function test_vitals_reject_sistolik_not_greater_than_diastolik(): void
+    {
+        $this->assertVitalsRejected(['sistolik' => 80, 'diastolik' => 120], 'vitals');
+    }
+
+    public function test_vitals_reject_sistolik_equal_to_diastolik(): void
+    {
+        $this->assertVitalsRejected(['sistolik' => 100, 'diastolik' => 100], 'vitals');
     }
 
     public function test_medical_record_cannot_be_deleted(): void

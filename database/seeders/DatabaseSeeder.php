@@ -107,7 +107,7 @@ class DatabaseSeeder extends Seeder
                 'assessment' => 'Observasi febris.',
                 'plan' => 'Istirahat, hidrasi, paracetamol bila perlu.',
                 'icd10_code' => 'R50.9',
-                'vitals' => ['tensi' => '120/80', 'suhu' => 36.8, 'nadi' => 80, 'spo2' => 98],
+                'vitals' => ['sistolik' => 120, 'diastolik' => 80, 'suhu' => 36.8, 'nadi' => 80, 'respirasi' => 18],
                 'prescription' => [['name' => 'Paracetamol', 'dose' => '500mg', 'frequency' => '3x1']],
             ]);
         }

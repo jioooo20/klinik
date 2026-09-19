@@ -79,7 +79,7 @@ MedicalRecord::create([
     'assessment' => 'Sehat klinik B.',
     'plan' => 'Observasi.',
     'icd10_code' => 'Z00',
-    'vitals' => ['tensi' => '110/70'],
+    'vitals' => ['sistolik' => 110, 'diastolik' => 70, 'suhu' => 36.5, 'nadi' => 78, 'respirasi' => 18],
     'prescription' => [],
 ]);
 
