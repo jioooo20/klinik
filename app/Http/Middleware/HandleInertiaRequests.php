@@ -39,6 +39,13 @@ class HandleInertiaRequests extends Middleware
 
         return [
             ...parent::share($request),
+
+            // Token CSRF selalu disertakan pada setiap respons Inertia, sehingga
+            // klien tidak bergantung pada waktu penyegaran cookie XSRF-TOKEN.
+            // Mencegah 419 "Page Expired" saat token cookie sudah tidak sinkron
+            // dengan token di sesi server (mis. setelah regenerate() saat login).
+            'csrf_token' => csrf_token(),
+
             'auth' => [
                 'user' => $user?->load('roles'),
                 'roles' => $user?->getRoleNames()->toArray() ?? [],

@@ -72,11 +72,11 @@ export default function RoleLayout({ title, accent, nav, children }: RoleLayoutP
                         <span className="text-sm font-medium text-slate-700">
                             {auth.user?.name}
                         </span>
-                        <Link href={route('logout')} method="post" as="button">
-                            <Button variant="outline" size="sm">
+                        <Button asChild variant="outline" size="sm">
+                            <Link href={route('logout')} method="post" as="button">
                                 Keluar
-                            </Button>
-                        </Link>
+                            </Link>
+                        </Button>
                     </div>
                 </header>
 
