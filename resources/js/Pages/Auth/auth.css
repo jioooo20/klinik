@@ -101,3 +101,26 @@
         transform: none !important;
     }
 }
+
+/* ---- Brand panel background photo + scrim ---- */
+.auth-panel-media {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 30%;
+}
+
+/* Gradient scrim keeps the panel on-brand and the text legible over the photo */
+.auth-panel-scrim {
+    position: absolute;
+    inset: 0;
+    background-image: linear-gradient(
+            160deg,
+            color-mix(in oklab, var(--landing-indigo-strong) 92%, transparent),
+            color-mix(in oklab, var(--landing-indigo) 78%, transparent) 52%,
+            color-mix(in oklab, var(--landing-teal) 70%, transparent)
+        ),
+        linear-gradient(to right, oklch(0.2 0.05 265 / 55%), transparent 60%);
+}

@@ -32,6 +32,16 @@ export default function AuthShell({ eyebrow, title, subtitle, children }: AuthSh
         <div ref={root} className="auth grid min-h-screen lg:grid-cols-2">
             {/* Brand panel */}
             <aside className="auth-panel relative hidden flex-col justify-between p-10 lg:flex">
+                <img
+                    src="/images/patient-consultation.jpg"
+                    alt=""
+                    aria-hidden
+                    className="auth-panel-media"
+                    loading="eager"
+                    width={1600}
+                    height={1067}
+                />
+                <div className="auth-panel-scrim" aria-hidden />
                 <div className="landing-dotgrid absolute inset-0" aria-hidden />
                 <span className="auth-bloom auth-bloom-a" aria-hidden />
                 <span className="auth-bloom auth-bloom-b" aria-hidden />
