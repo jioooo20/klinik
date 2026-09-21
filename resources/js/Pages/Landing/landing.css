@@ -1,0 +1,171 @@
+/* ==========================================================================
+   Landing page — "Calm Clinical Premium"
+   Motifs, reveal primitives and micro-interactions for the public landing page.
+   All motion has a `prefers-reduced-motion` escape hatch.
+   ========================================================================== */
+
+/* ---- Design tokens scoped to the landing page ---- */
+.landing {
+    --landing-indigo: oklch(0.51 0.22 277);
+    --landing-indigo-strong: oklch(0.45 0.22 277);
+    --landing-teal: oklch(0.7 0.1 190);
+    --landing-teal-text: oklch(0.52 0.09 190);
+    --landing-ink: oklch(0.21 0.04 265);
+    --landing-muted: oklch(0.55 0.03 257);
+    --landing-line: oklch(0.93 0.01 256);
+    font-family: var(--font-sans);
+    color: var(--landing-ink);
+    background-color: #ffffff;
+}
+
+.landing h1,
+.landing h2,
+.landing h3,
+.landing .landing-display {
+    font-family: 'Plus Jakarta Sans', var(--font-sans);
+    letter-spacing: -0.02em;
+}
+
+/* ---- Signature motif 1: soft gradient mesh ---- */
+.landing-mesh {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+.landing-mesh::before,
+.landing-mesh::after {
+    content: '';
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(90px);
+    opacity: 0.55;
+}
+.landing-mesh::before {
+    width: 42rem;
+    height: 42rem;
+    top: -18rem;
+    right: -12rem;
+    background: radial-gradient(circle at 30% 30%, oklch(0.72 0.16 277), transparent 65%);
+}
+.landing-mesh::after {
+    width: 34rem;
+    height: 34rem;
+    bottom: -16rem;
+    left: -10rem;
+    background: radial-gradient(circle at 60% 40%, oklch(0.82 0.1 190), transparent 65%);
+}
+
+/* ---- Signature motif 2: faint dot grid overlay ---- */
+.landing-dotgrid {
+    background-image: radial-gradient(oklch(0.6 0.02 256 / 22%) 1px, transparent 1px);
+    background-size: 22px 22px;
+}
+
+/* ---- Signature motif 3: glass card ---- */
+.landing-glass {
+    background: color-mix(in oklab, white 72%, transparent);
+    backdrop-filter: blur(12px);
+    border: 1px solid color-mix(in oklab, white 60%, transparent);
+    box-shadow: 0 10px 40px -12px oklch(0.5 0.18 277 / 18%);
+}
+
+/* ---- Signature motif 4: rounded medical cross divider ---- */
+.landing-cross {
+    position: relative;
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    background: var(--landing-teal);
+    box-shadow: 0 0 0 4px color-mix(in oklab, var(--landing-teal) 22%, transparent);
+}
+
+/* ---- Reveal primitive: elements start hidden then anime.js fades them in.
+        If JS is disabled or motion is reduced, `.is-revealed` / the media query
+        below guarantees they are visible. ---- */
+[data-reveal] {
+    opacity: 0;
+    transform: translateY(24px);
+    will-change: opacity, transform;
+}
+[data-reveal].is-revealed {
+    opacity: 1;
+    transform: none;
+}
+
+/* ---- Hover lift for cards ---- */
+.landing-lift {
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+        box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.landing-lift:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 24px 48px -20px oklch(0.5 0.18 277 / 32%);
+}
+
+/* ---- Gentle pulse for the primary CTA ---- */
+@keyframes landing-pulse {
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 oklch(0.51 0.22 277 / 45%);
+    }
+    50% {
+        box-shadow: 0 0 0 12px oklch(0.51 0.22 277 / 0%);
+    }
+}
+.landing-pulse {
+    animation: landing-pulse 2.6s ease-out infinite;
+}
+
+/* ---- Marquee for the testimonial strip (pauses on hover / reduced motion) ---- */
+@keyframes landing-marquee {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(-50%);
+    }
+}
+.landing-marquee {
+    animation: landing-marquee 38s linear infinite;
+}
+.landing-marquee-wrap:hover .landing-marquee {
+    animation-play-state: paused;
+}
+
+/* ---- FAQ accordion ---- */
+.landing-faq-panel {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.3s ease;
+}
+.landing-faq-panel[data-open='true'] {
+    grid-template-rows: 1fr;
+}
+.landing-faq-panel > div {
+    overflow: hidden;
+}
+
+/* ---- Focus ring parity with the app ---- */
+.landing a:focus-visible,
+.landing button:focus-visible {
+    outline: 3px solid color-mix(in oklab, var(--landing-indigo) 55%, transparent);
+    outline-offset: 2px;
+    border-radius: 0.5rem;
+}
+
+/* ---- Reduced motion: show everything, kill all animation ---- */
+@media (prefers-reduced-motion: reduce) {
+    [data-reveal] {
+        opacity: 1 !important;
+        transform: none !important;
+    }
+    .landing-pulse,
+    .landing-marquee {
+        animation: none !important;
+    }
+    .landing-lift,
+    .landing-faq-panel {
+        transition: none !important;
+    }
+}

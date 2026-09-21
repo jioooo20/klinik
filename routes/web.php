@@ -14,7 +14,8 @@ Route::get('/', function () {
     if (Auth::check()) {
         return redirect()->route('dashboard');
     }
-    return redirect()->route('login');
+
+    return Inertia::render('Landing/Index');
 })->name('welcome');
 
 /*
