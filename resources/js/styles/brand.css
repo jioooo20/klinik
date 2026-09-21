@@ -1,0 +1,87 @@
+/* ==========================================================================
+   Brand tokens & shared motifs
+   "Calm Clinical Premium" — shared by the public landing page and the
+   authentication screens. Values mirror the app's indigo identity with a
+   teal health accent.
+   ========================================================================== */
+
+.brand {
+    --landing-indigo: oklch(0.51 0.22 277);
+    --landing-indigo-strong: oklch(0.45 0.22 277);
+    --landing-teal: oklch(0.7 0.1 190);
+    --landing-teal-text: oklch(0.52 0.09 190);
+    --landing-ink: oklch(0.21 0.04 265);
+    --landing-muted: oklch(0.55 0.03 257);
+    --landing-line: oklch(0.93 0.01 256);
+    color: var(--landing-ink);
+}
+
+.brand h1,
+.brand h2,
+.brand h3,
+.brand .landing-display {
+    font-family: 'Plus Jakarta Sans', var(--font-sans);
+    letter-spacing: -0.02em;
+}
+
+/* ---- Soft gradient mesh ---- */
+.landing-mesh {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+.landing-mesh::before,
+.landing-mesh::after {
+    content: '';
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(90px);
+    opacity: 0.55;
+}
+.landing-mesh::before {
+    width: 42rem;
+    height: 42rem;
+    top: -18rem;
+    right: -12rem;
+    background: radial-gradient(circle at 30% 30%, oklch(0.72 0.16 277), transparent 65%);
+}
+.landing-mesh::after {
+    width: 34rem;
+    height: 34rem;
+    bottom: -16rem;
+    left: -10rem;
+    background: radial-gradient(circle at 60% 40%, oklch(0.82 0.1 190), transparent 65%);
+}
+
+/* ---- Faint dot grid overlay ---- */
+.landing-dotgrid {
+    background-image: radial-gradient(oklch(0.6 0.02 256 / 22%) 1px, transparent 1px);
+    background-size: 22px 22px;
+}
+
+/* ---- Glass card ---- */
+.landing-glass {
+    background: color-mix(in oklab, white 72%, transparent);
+    backdrop-filter: blur(12px);
+    border: 1px solid color-mix(in oklab, white 60%, transparent);
+    box-shadow: 0 10px 40px -12px oklch(0.5 0.18 277 / 18%);
+}
+
+/* ---- Rounded medical cross bullet ---- */
+.landing-cross {
+    position: relative;
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    background: var(--landing-teal);
+    box-shadow: 0 0 0 4px color-mix(in oklab, var(--landing-teal) 22%, transparent);
+}
+
+/* ---- Focus ring parity with the app ---- */
+.brand a:focus-visible,
+.brand button:focus-visible {
+    outline: 3px solid color-mix(in oklab, var(--landing-indigo) 55%, transparent);
+    outline-offset: 2px;
+    border-radius: 0.5rem;
+}

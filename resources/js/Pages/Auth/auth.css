@@ -1,0 +1,103 @@
+/* ==========================================================================
+   Authentication screens (Login / Register)
+   Split brand-panel + form layout using the shared "Calm Clinical Premium"
+   tokens from ../styles/brand.css. Includes a reduced-motion escape hatch.
+   ========================================================================== */
+
+@import '../../styles/brand.css';
+
+.auth {
+    font-family: var(--font-sans);
+    background-color: #ffffff;
+}
+
+/* ---- Brand panel: deep indigo → teal gradient with motifs ---- */
+.auth-panel {
+    position: relative;
+    overflow: hidden;
+    color: #ffffff;
+    background-image: linear-gradient(
+        150deg,
+        var(--landing-indigo-strong),
+        var(--landing-indigo) 52%,
+        var(--landing-teal)
+    );
+}
+.auth-panel .landing-dotgrid {
+    opacity: 0.18;
+}
+
+/* Soft light blooms inside the panel */
+.auth-bloom {
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(70px);
+    opacity: 0.4;
+    pointer-events: none;
+}
+.auth-bloom-a {
+    width: 22rem;
+    height: 22rem;
+    top: -6rem;
+    right: -6rem;
+    background: radial-gradient(circle at 40% 40%, oklch(0.85 0.12 190), transparent 65%);
+}
+.auth-bloom-b {
+    width: 20rem;
+    height: 20rem;
+    bottom: -8rem;
+    left: -6rem;
+    background: radial-gradient(circle at 60% 40%, oklch(0.72 0.16 277), transparent 65%);
+}
+
+/* ---- Floating feature pills on the panel ---- */
+.auth-pill {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    border-radius: 9999px;
+    padding: 0.55rem 1rem;
+    background: color-mix(in oklab, white 14%, transparent);
+    border: 1px solid color-mix(in oklab, white 26%, transparent);
+    backdrop-filter: blur(8px);
+    font-size: 0.85rem;
+}
+
+/* ---- Form card ---- */
+.auth-card {
+    border: 1px solid var(--landing-line);
+    background: #ffffff;
+    border-radius: 1.5rem;
+    box-shadow: 0 24px 60px -28px oklch(0.5 0.18 277 / 30%);
+}
+
+/* ---- Brand mark ---- */
+.auth-mark {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.85rem;
+    color: #ffffff;
+    background: var(--landing-indigo);
+}
+
+/* ---- Entrance primitives (driven by anime.js; safe without JS) ---- */
+[data-auth] {
+    opacity: 0;
+    transform: translateY(18px);
+    will-change: opacity, transform;
+}
+[data-auth].is-revealed {
+    opacity: 1;
+    transform: none;
+}
+
+/* ---- Reduced motion: show everything ---- */
+@media (prefers-reduced-motion: reduce) {
+    [data-auth] {
+        opacity: 1 !important;
+        transform: none !important;
+    }
+}
