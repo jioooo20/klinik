@@ -261,14 +261,18 @@ function Hero() {
 
 function StatValue({ value, suffix }: { value: number; suffix: string }) {
     const ref = useRef<HTMLSpanElement>(null);
-    useCounter(ref.current, value, { suffix });
+    useCounter(ref, value, { suffix });
 
+    // The hook overwrites this text on mount; rendering the real value here
+    // (instead of a hard-coded "0") keeps the number meaningful before the
+    // count-up animation runs and if JS is disabled.
     return (
         <span
             ref={ref}
             className="landing-display text-4xl font-extrabold text-[var(--landing-indigo)] md:text-5xl"
         >
-            0{suffix}
+            {value.toLocaleString('id-ID')}
+            {suffix}
         </span>
     );
 }

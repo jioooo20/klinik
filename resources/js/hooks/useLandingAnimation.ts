@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { RefObject, useEffect, useRef } from 'react';
 import { animate, onScroll, stagger } from 'animejs';
 
 /**
@@ -71,20 +71,30 @@ export function useRevealOnScroll<T extends HTMLElement = HTMLDivElement>() {
 
 /**
  * Animate a numeric counter from 0 to `value` the first time it enters view.
+ * Accepts a ref so the effect runs once the DOM node is actually mounted
+ * (passing `ref.current` directly would capture `null` on the first render).
  * Falls back to writing the final value instantly under reduced motion.
  */
-export function useCounter(
-    target: HTMLElement | null,
+export function useCounter<T extends HTMLElement = HTMLSpanElement>(
+    ref: RefObject<T | null>,
     value: number,
     { duration = 1400, suffix = '' }: { duration?: number; suffix?: string } = {},
 ) {
     useEffect(() => {
+        const target = ref.current;
         if (!target) {
             return;
         }
 
+        const render = (n: number) =>
+            `${Math.round(n).toLocaleString('id-ID')}${suffix}`;
+
+        // Always show the final value first so the number is never left at 0
+        // (covers reduced-motion, no-JS-animation and IntersectionObserver
+        // edge cases).
+        target.textContent = render(value);
+
         if (prefersReducedMotion()) {
-            target.textContent = `${value}${suffix}`;
             return;
         }
 
@@ -93,19 +103,20 @@ export function useCounter(
             target,
             enter: 'bottom top-=60',
             onEnter: () => {
+                target.textContent = render(0);
                 animate(proxy, {
                     n: value,
                     duration,
                     ease: 'outExpo',
                     onUpdate: () => {
-                        target.textContent = `${Math.round(proxy.n).toLocaleString('id-ID')}${suffix}`;
+                        target.textContent = render(proxy.n);
                     },
                 });
             },
         });
 
         return () => observer.revert();
-    }, [target, value, duration, suffix]);
+    }, [ref, value, duration, suffix]);
 }
 
 /**

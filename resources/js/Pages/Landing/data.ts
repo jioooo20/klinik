@@ -35,13 +35,20 @@ export interface StepItem {
     description: string;
 }
 
+/**
+ * Brand + demo contact details.
+ *
+ * The contact fields are intentionally obvious placeholders so this public
+ * landing page never exposes a real clinic's phone/email/address. Swap them
+ * for production values only when the page is used for a live clinic.
+ */
 export const CLINIC = {
     name: 'Klinik Sehat Sentosa',
     tagline: 'Sehat Anda, Prioritas Kami',
-    phone: '(021) 555-0123',
-    whatsapp: '0812-3456-7890',
-    email: 'halo@sehatsentosa.id',
-    address: 'Jl. Kesehatan Raya No. 24, Jakarta Selatan, DKI Jakarta 12140',
+    phone: '(021) 000-0000',
+    whatsapp: '0800-0000-0000',
+    email: 'contoh@klinik-demo.test',
+    address: 'Jl. Contoh No. 00, Kota Contoh, Provinsi Contoh 00000',
     hours: 'Senin - Sabtu, 08.00 - 21.00 WIB',
 };
 
@@ -60,11 +67,12 @@ export const TRUST_BADGES = [
     'Laboratorium Terakreditasi',
 ];
 
+/** Illustrative showcase figures (demo data, not real clinic metrics). */
 export const STATS = [
-    { value: 12000, suffix: '+', label: 'Pasien terlayani' },
-    { value: 18, suffix: ' tahun', label: 'Pengalaman melayani' },
-    { value: 24, suffix: ' dokter', label: 'Dokter & spesialis' },
-    { value: 98, suffix: '%', label: 'Kepuasan pasien' },
+    { value: 15000, suffix: '+', label: 'Pasien terlayani' },
+    { value: 20, suffix: ' tahun', label: 'Pengalaman melayani' },
+    { value: 30, suffix: ' dokter', label: 'Dokter & spesialis' },
+    { value: 99, suffix: '%', label: 'Kepuasan pasien' },
 ];
 
 export const SERVICES: ServiceItem[] = [
