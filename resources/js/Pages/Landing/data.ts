@@ -69,10 +69,10 @@ export const TRUST_BADGES = [
 
 /** Illustrative showcase figures (demo data, not real clinic metrics). */
 export const STATS = [
-    { value: 15000, suffix: '+', label: 'Pasien terlayani' },
-    { value: 20, suffix: ' tahun', label: 'Pengalaman melayani' },
-    { value: 30, suffix: ' dokter', label: 'Dokter & spesialis' },
-    { value: 99, suffix: '%', label: 'Kepuasan pasien' },
+    { value: 2500, suffix: '+', label: 'Pasien terlayani' },
+    { value: 18, suffix: ' tahun', label: 'Pengalaman melayani' },
+    { value: 8, suffix: ' dokter', label: 'Dokter & spesialis' },
+    { value: 95, suffix: '%', label: 'Kepuasan pasien' },
 ];
 
 export const SERVICES: ServiceItem[] = [

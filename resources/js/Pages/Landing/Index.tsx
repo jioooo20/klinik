@@ -169,7 +169,6 @@ function Hero() {
                         data-hero
                         className="inline-flex items-center gap-2 rounded-full border border-[var(--landing-line)] bg-white/70 px-4 py-1.5 text-sm font-medium text-[var(--landing-indigo)]"
                     >
-                        <span className="landing-cross" aria-hidden />
                         Klinik terpercaya sejak 2008
                     </span>
 
